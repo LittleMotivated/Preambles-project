@@ -9,13 +9,13 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
-#define MAX_ATTEMPTS 100
+#define MAX_ATTEMPTS 500
 
 int main(int argc, char* argv[]) {
     int abonent_count;
     if (argc > 1) {
         abonent_count = atoi(argv[1]);
-        if (abonent_count <= 0 || abonent_count > MAX_PREAMBLES) {
+        if (abonent_count <= 0) {
             printf("Error: Incorrect number of abonents. Connection impossible.\n");
             goto delete;
         }
@@ -57,14 +57,25 @@ int main(int argc, char* argv[]) {
     int padding = (SCREEN_WIDTH - MARGIN * 2) / abonent_count;
     DrawBase(renderer, font, abonent_count, padding);
 
+    int* ready_list = calloc(abonent_count, sizeof(int));
+    if (!ready_list) {
+        printf("Error: Memory allocation failed.\n");
+        TTF_CloseFont(font);
+        TTF_Quit();
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return -1;
+    }
     List l;
     if (list_init(&l) != 0) {
         printf("Error: List initialization failed.\n");
+        free(ready_list);
         goto delete_list;
     }
     int attemption_number = 0;
     int success = 0;
-    int attempt_res;
+    int attempt_res = 0;
     size_t i = 0;
     int running = 1;
     SDL_Event event;
@@ -97,20 +108,28 @@ int main(int argc, char* argv[]) {
         }
 
         if (i == l.size) {
-            if (attempt_res == 0) {
-                success = 1;
+            if (success == abonent_count) {
+                break;
+            }
+            if (attemption_number >= MAX_ATTEMPTS) {
+                printf("Достигнуто максимальное количество попыток. Критический сбой.\n");
+                break;
             }
             attemption_number++;
             l.size = 0;
             i = 0;
-            attempt_res = attempt(abonent_count, &l);
+            attempt_res = attempt(abonent_count, ready_list, &l);
             if (attempt_res == -1) {
                 printf("Error: Attempt failed with code -1.\n");
                 list_free(&l);
                 goto delete_list;
             }
+            success += attempt_res;
         }
-        if (success || running == -1) {
+        if (l.size == 0) {
+            continue;
+        }
+        if (running == -1) {
             continue;
         }
 
@@ -118,11 +137,9 @@ int main(int argc, char* argv[]) {
         switch (call.type) {
         case ABONENT_SEND_PREAMBLE:
             printf("Абонент %d: Преамбула %d.\n", call.abonent_id + 1, call.preamble_number);
-            UpdateScreen(renderer, font, abonent_count, padding, &l, 0, attemption_number);
             break;
         case BS_CHECK:
             printf("БС: Кто отправил преамбулу %d?\n", call.preamble_number);
-            UpdateScreen(renderer, font, abonent_count, padding, &l, 1, attemption_number);
             break;
         case ABONENT_ANSWER:
             printf("Я, Абонент %d, отправил преамбулу %d.\n", call.abonent_id + 1, call.preamble_number);
@@ -141,16 +158,18 @@ int main(int argc, char* argv[]) {
             printf("Error: Unknown call.\n");
             break;
         }
+        UpdateScreen(renderer, font, abonent_count, padding, &l, 1, attemption_number);
         i++;
 
         //SDL_Delay(0);
     }
 
-    if (success == 1) {
+    if (success == abonent_count) {
         printf("Установлено успешное соединение для %d абонентов после %d попыток.\n", abonent_count, attemption_number);
     } else {
         printf("Достигнуто максимальное количество попыток. Критический сбой.\n");
     }
+
 
     
     return 0;

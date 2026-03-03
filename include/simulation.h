@@ -16,7 +16,7 @@ typedef enum States_e{
 
 typedef struct Call_s {
     Call_type type;
-    int abonent_id; // id абонента, если вызов совершает абонент, если БС = -1
+    int abonent_id; //id абонента, если вызов совершает абонент, если БС = -1
     int preamble_number; // номер преамбулы, если вызов совершает абонент, если БС = -1
 } Call;
 
@@ -29,6 +29,6 @@ typedef struct Call_list_s {
 int list_init(List* l);
 int list_add(List* l, Call_type type, int abonent_id, int preamble_number);
 void list_free(List* l);
-int attempt(int abonent_count, List* out_list);
+int attempt(int abonent_count, int* ready_list, List* out_list);
 
 #endif // SIMULATION_H_
