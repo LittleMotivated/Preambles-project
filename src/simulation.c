@@ -44,12 +44,12 @@ void list_free(List* l) {
     l->size = l->capacity = 0;
 }
 
-int attempt(int abonent_count, List* out_list) {
-    if (out_list == NULL) {
-        printf("Error: out_list is NULL.\n");
+int attempt(int abonent_count, int* ready_list, List* out_list) {
+    if (out_list == NULL || ready_list == NULL) {
+        printf("Error: out_list or ready_list is NULL.\n");
         return -1;
     }
-    if (abonent_count <= 0 || abonent_count > MAX_PREAMBLES) {
+    if (abonent_count <= 0) {
         printf("Error: Incorrect number of abonents. Connection impossible.\n");
         return -1;
     }
@@ -60,41 +60,47 @@ int attempt(int abonent_count, List* out_list) {
         random_seed = 1;
     }
 
-    int preambles[MAX_PREAMBLES];
+    int* preambles = malloc(abonent_count * sizeof(int));
+    if (!preambles) {
+        printf("Error: Memory allocation failed.\n");
+        return -1;
+    }
     int count_usage[MAX_PREAMBLES] = {0};
 
     for (int i = 0; i < abonent_count; i++) {
+        if (ready_list[i] != 0) {
+            continue;
+        }
         int preamble = rand() % MAX_PREAMBLES;
         preambles[i] = preamble;
         count_usage[preamble]++;
         if (list_add(out_list, ABONENT_SEND_PREAMBLE, i, preamble) != 0) {
+            free(preambles);
             return -1;
         }
     }
 
-    // Добавляем проверки БС
     for (int i = 0; i < MAX_PREAMBLES; i++) {
         if (count_usage[i] == 0) {
             continue;
         }
         if (list_add(out_list, BS_CHECK, -1, i) != 0) {
+            free(preambles);
             return -1;
         }
-    }
-    // Добавляем ответы абонентов
-    for (int i = 0; i < MAX_PREAMBLES; i++) {
-        if (count_usage[i] == 0) {
-            continue;
-        }
-        for (int j =0; j < abonent_count; j++) {
+        for (int j = 0; j < abonent_count; j++) {
+            if (ready_list[j] != 0) {
+                continue;
+            }
             if (preambles[j] == i) {
                 if (list_add(out_list, ABONENT_ANSWER, j, i) != 0) {
+                    free(preambles);
                     return -1;
                 }
             }
         }
     }
-
+    int success = 0;
     int collision = 0;
     for (int i = 0; i < MAX_PREAMBLES; i++) {
         if (count_usage[i] > 1) {
@@ -103,20 +109,52 @@ int attempt(int abonent_count, List* out_list) {
         }
     }
 
-    if (collision != 0) {
-        if (list_add(out_list, BS_COLLISION, -1, -1) != 0) {
-            return -1;
-        }
-        if (list_add(out_list, ABONENT_RETRY, -1, -1) != 0) {
-            return -1;
-        }
-        return 1;
-    } else {
+    if (collision == 0) {
         for (int i = 0; i < abonent_count; i++) {
-            if (list_add(out_list, BS_SUCCESS, i, preambles[i]) != 0) {
-                return -1;
+            if (ready_list[i] == 0) {
+                if (list_add(out_list, BS_SUCCESS, i, preambles[i]) != 0) {
+                    free(preambles);
+                    return -1;
+                }
+                ready_list[i] = 1;
+                success++;
             }
         }
-        return 0;
+        free(preambles);
+        return success;
+    } else {
+        if (list_add(out_list, BS_COLLISION, -1, -1) != 0) {
+            free(preambles);
+            return -1;
+        }
+        for (int i = 0; i < MAX_PREAMBLES; i++) {
+            if (count_usage[i] == 0) {
+                continue;
+            }
+            if (count_usage[i] == 1) {
+                for (int j = 0; j < abonent_count; j++) {
+                    if (ready_list[j] == 0 && preambles[j] == i) {
+                         if (list_add(out_list, BS_SUCCESS, j, i) != 0) {
+                            free(preambles);
+                            return -1;
+                        }
+                        ready_list[j] = 1;
+                        success++;
+                        break;
+                    }
+                }
+            } else {
+                for (int j = 0; j < abonent_count; j++) {
+                    if (ready_list[j] == 0 && preambles[j] == i) {
+                         if (list_add(out_list, ABONENT_RETRY, j, i) != 0) {
+                            free(preambles);
+                            return -1;
+                        }
+                    }
+                }
+            }
+        }
+        free(preambles);
+        return success;
     }
 }
