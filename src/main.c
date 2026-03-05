@@ -10,6 +10,7 @@
 #include <SDL2/SDL_ttf.h>
 
 #define MAX_ATTEMPTS 500
+#define FRAME_DELAY 2500
 
 int main(int argc, char* argv[]) {
     int abonent_count;
@@ -60,17 +61,11 @@ int main(int argc, char* argv[]) {
     int* ready_list = calloc(abonent_count, sizeof(int));
     if (!ready_list) {
         printf("Error: Memory allocation failed.\n");
-        TTF_CloseFont(font);
-        TTF_Quit();
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return -1;
+        goto delete_ready_list;
     }
     List l;
     if (list_init(&l) != 0) {
         printf("Error: List initialization failed.\n");
-        free(ready_list);
         goto delete_list;
     }
     int attemption_number = 0;
@@ -80,6 +75,7 @@ int main(int argc, char* argv[]) {
     int running = 1;
     SDL_Event event;
     Call_type simulation_step = ABONENT_SEND_PREAMBLE;
+    Uint32 prev_time = SDL_GetTicks() - FRAME_DELAY;
     // Основной цикл
     while (running) {
         // Обработка событий
@@ -107,9 +103,22 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        if (running == -1) {
+            continue;
+        }
+
         if (i == l.size) {
+
+            if (SDL_GetTicks() - prev_time < FRAME_DELAY) {
+                continue;
+            }
+            prev_time = SDL_GetTicks();
+
+            UpdateScreen(renderer, font, abonent_count, padding, &l, 1, attemption_number);
+
             if (success == abonent_count) {
-                break;
+                //break;
+                continue;
             }
             if (attemption_number >= MAX_ATTEMPTS) {
                 printf("Достигнуто максимальное количество попыток. Критический сбой.\n");
@@ -121,15 +130,11 @@ int main(int argc, char* argv[]) {
             attempt_res = attempt(abonent_count, ready_list, &l);
             if (attempt_res == -1) {
                 printf("Error: Attempt failed with code -1.\n");
-                list_free(&l);
-                goto delete_list;
+                goto delete_all;
             }
             success += attempt_res;
         }
         if (l.size == 0) {
-            continue;
-        }
-        if (running == -1) {
             continue;
         }
 
@@ -158,8 +163,8 @@ int main(int argc, char* argv[]) {
             printf("Error: Unknown call.\n");
             break;
         }
-        UpdateScreen(renderer, font, abonent_count, padding, &l, 1, attemption_number);
         i++;
+        printf("%d\n", SDL_GetTicks());
 
         //SDL_Delay(0);
     }
@@ -170,20 +175,28 @@ int main(int argc, char* argv[]) {
         printf("Достигнуто максимальное количество попыток. Критический сбой.\n");
     }
 
-
-    
-    return 0;
-delete_list:
     list_free(&l);
-delete_font:
+    free(ready_list);
     TTF_CloseFont(font);
-delete_ttf:
     TTF_Quit();
-delete_renderer:
     SDL_DestroyRenderer(renderer);
-delete_window:
     SDL_DestroyWindow(window);
-delete_sdl:
+    SDL_Quit();
+    return 0;
+
+delete_all:
+    list_free(&l);
+delete_list:
+    free(ready_list);
+delete_ready_list:
+    TTF_CloseFont(font);
+delete_font:
+    TTF_Quit();
+delete_ttf:
+    SDL_DestroyRenderer(renderer);
+delete_renderer:
+    SDL_DestroyWindow(window);
+delete_window:
     SDL_Quit();
 delete:
     return -1;

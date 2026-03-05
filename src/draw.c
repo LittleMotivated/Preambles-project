@@ -24,7 +24,7 @@ int DrawBase(SDL_Renderer *renderer, TTF_Font *font, int abonent_count, int padd
     // Рисуем номера абонентов
     char buf[10];
     for (int i = 0; i < abonent_count; ++i) {
-        sprintf(buf, "%d", i + 1);
+        /*sprintf(buf, "%d", i + 1);
         surface = TTF_RenderText_Blended(font, buf, COLOR_BLUE);
         texture = SDL_CreateTextureFromSurface(renderer, surface);
 
@@ -35,7 +35,7 @@ int DrawBase(SDL_Renderer *renderer, TTF_Font *font, int abonent_count, int padd
 
         SDL_RenderCopy(renderer, texture, NULL, &text_rect);
         SDL_DestroyTexture(texture);
-        SDL_FreeSurface(surface);
+        SDL_FreeSurface(surface);*/
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
         SDL_RenderDrawRect(renderer, &(SDL_Rect){MARGIN + padding * i, MARGIN + 50, 5, 5});
@@ -75,7 +75,7 @@ int DrawBase(SDL_Renderer *renderer, TTF_Font *font, int abonent_count, int padd
     SDL_DestroyTexture(texture);
     SDL_FreeSurface(surface);
 
-    // Подпись БС
+    // Подпись
     surface = TTF_RenderUTF8_Blended(font, "Пауза - Space Выход - esc", COLOR_GRAY);
     texture = SDL_CreateTextureFromSurface(renderer, surface);
 
