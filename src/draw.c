@@ -90,7 +90,7 @@ int DrawBase(SDL_Renderer *renderer, TTF_Font *font,
     SDL_FreeSurface(surface);
 
     // Подпись
-    surface = TTF_RenderUTF8_Blended(font, "Пауза - Space Выход - esc", COLOR_GRAY);
+    surface = TTF_RenderUTF8_Blended(font, "Открыть график - p    Пауза - Space    Выход - esc", COLOR_GRAY);
     texture = SDL_CreateTextureFromSurface(renderer, surface);
 
     text_rect.h = surface->h;
@@ -161,14 +161,14 @@ int DrawPlot(SDL_Renderer *renderer, TTF_Font *font, Statistics_data *stat_data)
     SDL_SetRenderDrawColor(renderer, WHITE);
     SDL_RenderClear(renderer);
 
-    int padding = 20;
+    int padding = 40;
     // Рисуем оси
     SDL_SetRenderDrawColor(renderer, BLACK);
     SDL_RenderDrawLine(renderer, padding, PLOT_SCREEN_HEIGHT - padding, padding, padding);
     SDL_RenderDrawLine(renderer, padding, PLOT_SCREEN_HEIGHT - padding,
                        PLOT_SCREEN_WIDTH - padding, PLOT_SCREEN_HEIGHT - padding);
 
-    SDL_RenderDrawLines(renderer, stat_data->data, MAX_ABONENTS_STATISTICS);
+    SDL_RenderDrawLinesF(renderer, stat_data->data, MAX_ABONENTS_STATISTICS);
 
     SDL_RenderPresent(renderer);
 }

@@ -11,6 +11,26 @@
 
 #define FRAME_DELAY 2500
 
+int init_window_and_renderer(SDL_Window **window, char *title, SDL_Renderer **renderer) {
+    *window = SDL_CreateWindow(
+        title,
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+
+    if (*window == NULL) {
+        printf("Error: Failed to create window.\n");
+        return -1;
+    }
+    *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);
+    if (*renderer == NULL) {
+        printf("Error: Failed to create renderer.\n");
+        SDL_DestroyWindow(*window);
+        return -1;
+    }
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
     int abonent_count;
     if (argc > 1) {
@@ -24,26 +44,23 @@ int main(int argc, char* argv[]) {
         printf("Error: No input.\n");
         goto delete;
     }
-    
+
     // Инициализация SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         printf("Error: Failed to init SDL.\n");
         goto delete;
     }
-    SDL_Window *window = SDL_CreateWindow(
-        "Base station simulation",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 
-    if (window == NULL) {
-        printf("Error: Failed to create window.\n");
-        goto delete_window;
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    if (init_window_and_renderer(&window, "Base station simulation", &renderer) != 0) {
+        goto delete_window_and_renderer;
     }
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (renderer == NULL) {
-        printf("Error: Failed to create renderer.\n");
-        goto delete_renderer;
+
+    SDL_Window *plot_window;
+    SDL_Renderer *plot_renderer;
+    if (init_window_and_renderer(&plot_window, "Plot with statistics", &plot_renderer) != 0) {
+        goto delete_plot_window_and_renderer;
     }
 
     if (TTF_Init() != 0) {
@@ -56,21 +73,6 @@ int main(int argc, char* argv[]) {
         goto delete_font;
     }
 
-    // Дополнительное окно с графиком
-    SDL_Window *plot_window = SDL_CreateWindow(
-        "Base station simulation",
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        PLOT_SCREEN_WIDTH, PLOT_SCREEN_HEIGHT, 0);
-    if (plot_window == NULL) {
-        printf("Error: Failed to create plot window.\n");
-        goto delete_plot_window;
-    }
-    SDL_Renderer *plot_renderer = SDL_CreateRenderer(plot_window, -1, SDL_RENDERER_ACCELERATED);
-    if (plot_renderer == NULL) {
-        printf("Error: Failed to create plot renderer.\n");
-        goto delete_plot_renderer;
-    }
 
     int padding = (SCREEN_WIDTH - MARGIN * 2) / abonent_count;
     DrawBase(renderer, font, abonent_count, padding, NULL, NULL);
@@ -112,12 +114,17 @@ int main(int argc, char* argv[]) {
                     if (stat_data.is_processed == false) {
                         process_data(&stat_data);
                     }
+                    SDL_ShowWindow(plot_window);
                     DrawPlot(plot_renderer, font, &stat_data);
                     break;
                 case SDLK_SPACE:
                     running = -running; // Пауза
                     break;
                 case SDLK_ESCAPE:
+                    if (event.window.windowID == SDL_GetWindowID(plot_window)) {
+                        SDL_HideWindow(plot_window);
+                        break;
+                    }
                     running = 0; // Выход
                     break;
                 default:
@@ -209,19 +216,17 @@ delete_all:
     list_free(&l);
 delete_list:
     free(ready_list);
-delete_plot_renderer:
-    SDL_DestroyRenderer(plot_renderer);
-delete_plot_window:
-    SDL_DestroyWindow(plot_window);
 delete_ready_list:
     TTF_CloseFont(font);
 delete_font:
     TTF_Quit();
 delete_ttf:
+    SDL_DestroyRenderer(plot_renderer);
+    SDL_DestroyWindow(plot_window);
+delete_plot_window_and_renderer:
     SDL_DestroyRenderer(renderer);
-delete_renderer:
     SDL_DestroyWindow(window);
-delete_window:
+delete_window_and_renderer:
     SDL_Quit();
 delete:
     return -1;

@@ -1,3 +1,4 @@
+#include "draw.h"
 #include "simulation.h"
 #include <stdio.h>
 #include <time.h>
@@ -5,6 +6,8 @@
 #include <stdlib.h>
 
 #define START_CAPACITY 16
+#define SCALE_X 3
+#define SCALE_Y 10
 
 //возвращаемые значения: -1 - ошибка, 0 - успех, 1 - коллизия
 
@@ -160,8 +163,9 @@ int attempt(int abonent_count, int* ready_list, List* out_list) {
 }
 
 int process_data(Statistics_data *stat_data) {
+    int debug_total = 0;
     stat_data->data[0].x = 40;
-    stat_data->data[0].y = 40;
+    stat_data->data[0].y = PLOT_SCREEN_HEIGHT - 40;
     for (int abonent_count = 1; abonent_count <= MAX_ABONENTS_STATISTICS; ++abonent_count) {
         double attempts_sum = 0;
         int total_attempts = 0;
@@ -177,23 +181,28 @@ int process_data(Statistics_data *stat_data) {
                 printf("Error: List initialization failed.\n");
                 free(ready_list);
             }
-            while (attemption_number < MAX_ATTEMPTS) {
+            while (true/*attemption_number < MAX_ATTEMPTS*/) {
                 int res = attempt(abonent_count, ready_list, &l);
-                if (res == -1) {
-                    break;
-                }
                 success += res;
                 attemption_number++;
+                if (res == 0 || res == -1) { // Нет обработки ошибки res == -1
+                    break;
+                }
             }
             if (success == abonent_count) {
                 total_attempts++;
-                attempts_sum += attemption_number;
+                attempts_sum += attemption_number - 1; // Учитывается лишняя попытка при res == 0
+                debug_total++;
             }
             list_free(&l);
             free(ready_list);
         }
-        stat_data->data[abonent_count].x = abonent_count + 20;
-        stat_data->data[abonent_count].y = attempts_sum / total_attempts + 20; // Возможно деление на 0
+        stat_data->data[abonent_count].x = abonent_count * SCALE_X + 40;
+        long double y = PLOT_SCREEN_HEIGHT - 40 - attempts_sum * SCALE_Y / total_attempts; // Возможно деление на 0?
+        stat_data->data[abonent_count].y = y;
+        printf("%d %lf\n", abonent_count, (attempts_sum / total_attempts) + 40);
+        printf("%f %d\n\n", attempts_sum, total_attempts);
     }
     stat_data->is_processed = true;
+    //printf("\n\nDebug total: %d\n\n", debug_total);
 }

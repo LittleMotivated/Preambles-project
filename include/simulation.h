@@ -10,8 +10,8 @@
 
 #define MAX_PREAMBLES 64
 #define MAX_ATTEMPTS 500
-#define MAX_ABONENTS_STATISTICS 150
-#define STAT_ATTEMPTS_NUMBER 50
+#define MAX_ABONENTS_STATISTICS 300
+#define STAT_ATTEMPTS_NUMBER 200
 
 typedef enum States_e{
     ABONENT_SEND_PREAMBLE,
@@ -40,7 +40,7 @@ void list_free(List* l);
 int attempt(int abonent_count, int* ready_list, List* out_list);
 
 typedef struct {
-    SDL_Point data[MAX_ABONENTS_STATISTICS + 1];
+    SDL_FPoint data[MAX_ABONENTS_STATISTICS + 1];
     char is_processed;
 } Statistics_data;
 
