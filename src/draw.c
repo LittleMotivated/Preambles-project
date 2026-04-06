@@ -8,6 +8,43 @@ const SDL_Color COLOR_RED = {255, 0, 0, 255};
 const SDL_Color COLOR_GREEN = {0, 255, 0, 255};
 const SDL_Color COLOR_GRAY = {100, 100, 100, 255};
 
+void DrawText(SDL_Renderer *renderer, TTF_Font *font, char *text, int x, int y, bool left_align) {
+    SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text, COLOR_BLUE);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+    SDL_Rect text_rect;
+    text_rect.h = surface->h;
+    text_rect.w = surface->w;
+    text_rect.x = (left_align) ? x : x - surface->w;
+    text_rect.y = y;
+
+    SDL_RenderCopy(renderer, texture, NULL, &text_rect);
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
+}
+
+// 1 - центрировать по горизонтали, 2 - по вертикали, 0 - оба
+void DrawTextCentered(SDL_Renderer *renderer, TTF_Font *font, char *text, int x, int y, int center_by) {
+    SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text, COLOR_BLUE);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+    SDL_Rect text_rect;
+    text_rect.h = surface->h;
+    text_rect.w = surface->w;
+    text_rect.x = x;
+    text_rect.y = y;
+    if (center_by == 1 || center_by == 0) {
+        text_rect.x -= surface->w / 2;
+    }
+    if (center_by == 2 || center_by == 0) {
+        text_rect.y -= surface->h / 2;
+    }
+
+    SDL_RenderCopy(renderer, texture, NULL, &text_rect);
+    SDL_DestroyTexture(texture);
+    SDL_FreeSurface(surface);
+}
+
 // Рисует основу (номера абонентов, станцию...)
 int DrawBase(SDL_Renderer *renderer, TTF_Font *font,
              int abonent_count, int padding, int *count_usage, int *ready_list) {
@@ -63,44 +100,10 @@ int DrawBase(SDL_Renderer *renderer, TTF_Font *font,
         rect.x += PREAMBLE_PADD;
     }
 
-    // Подпись абонентов
-    surface = TTF_RenderUTF8_Blended(font, "Абоненты", COLOR_BLUE);
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-    text_rect.h = surface->h;
-    text_rect.w = surface->w;
-    text_rect.x = MARGIN;
-    text_rect.y = MARGIN - 40;
-
-    SDL_RenderCopy(renderer, texture, NULL, &text_rect);
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
-
-    // Подпись БС
-    surface = TTF_RenderUTF8_Blended(font, "Базовая станция", COLOR_BLUE);
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-    text_rect.h = surface->h;
-    text_rect.w = surface->w;
-    text_rect.x = MARGIN;
-    text_rect.y = SCREEN_HEIGHT - MARGIN + 20;
-
-    SDL_RenderCopy(renderer, texture, NULL, &text_rect);
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
-
-    // Подпись
-    surface = TTF_RenderUTF8_Blended(font, "Открыть график - p    Пауза - Space    Выход - esc", COLOR_GRAY);
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-
-    text_rect.h = surface->h;
-    text_rect.w = surface->w;
-    text_rect.x = SCREEN_WIDTH - MARGIN - surface->w;
-    text_rect.y = SCREEN_HEIGHT - MARGIN + 20;
-
-    SDL_RenderCopy(renderer, texture, NULL, &text_rect);
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
+    DrawText(renderer, font, "Абоненты", MARGIN, MARGIN - 40, true);
+    DrawText(renderer, font, "Базовая станция", MARGIN, SCREEN_HEIGHT - MARGIN + 20, true);
+    DrawText(renderer, font, "Открыть график - p    Пауза - Space    Выход - esc",
+             SCREEN_WIDTH - MARGIN, SCREEN_HEIGHT - MARGIN + 20, false);
 }
 
 // Каждый кадр обновляет экран
@@ -169,6 +172,22 @@ int DrawPlot(SDL_Renderer *renderer, TTF_Font *font, Statistics_data *stat_data)
                        PLOT_SCREEN_WIDTH - padding, PLOT_SCREEN_HEIGHT - padding);
 
     SDL_RenderDrawLinesF(renderer, stat_data->data, MAX_ABONENTS_STATISTICS);
+
+    // Подписи осей
+    for (int i = 0; i < MAX_ABONENTS_STATISTICS + 100; i += 60) {
+        char buf[10];
+        sprintf(buf, "%d", i);
+        DrawTextCentered(renderer, font, buf, 40 + i * 3, PLOT_SCREEN_HEIGHT - 30, 1);
+        printf("\n\n\n%d %d\n\n\n", 40 + i * 3, PLOT_SCREEN_HEIGHT - 20);
+        printf(buf);
+    }
+    /*for (int i = 0; i < 100; i += 4) {
+        char buf[10];
+        sprintf(buf, "%d", i);
+        DrawTextCentered(renderer, font, buf, 20, PLOT_SCREEN_HEIGHT - 40 - i * 10, 0);
+        printf("\n\n\n%d %d\n\n\n", 10, PLOT_SCREEN_HEIGHT - 40 - i * 10);
+        printf(buf);
+    }*/
 
     SDL_RenderPresent(renderer);
 }

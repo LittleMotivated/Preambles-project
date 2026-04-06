@@ -167,8 +167,8 @@ int process_data(Statistics_data *stat_data) {
     stat_data->data[0].x = 40;
     stat_data->data[0].y = PLOT_SCREEN_HEIGHT - 40;
     for (int abonent_count = 1; abonent_count <= MAX_ABONENTS_STATISTICS; ++abonent_count) {
-        double attempts_sum = 0;
-        int total_attempts = 0;
+        long double attempts_sum = 0;
+        long long total_attempts = 0;
         for (int i = 0; i < STAT_ATTEMPTS_NUMBER; ++i) {
             int success = 0;
             int attemption_number = 0;
@@ -200,8 +200,8 @@ int process_data(Statistics_data *stat_data) {
         stat_data->data[abonent_count].x = abonent_count * SCALE_X + 40;
         long double y = PLOT_SCREEN_HEIGHT - 40 - attempts_sum * SCALE_Y / total_attempts; // Возможно деление на 0?
         stat_data->data[abonent_count].y = y;
-        printf("%d %lf\n", abonent_count, (attempts_sum / total_attempts) + 40);
-        printf("%f %d\n\n", attempts_sum, total_attempts);
+        printf("%d %Lf\n", abonent_count, (attempts_sum / total_attempts) + 40);
+        printf("%Lf %d\n\n", attempts_sum, total_attempts);
     }
     stat_data->is_processed = true;
     //printf("\n\nDebug total: %d\n\n", debug_total);
