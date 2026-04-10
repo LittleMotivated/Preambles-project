@@ -6,8 +6,6 @@
 #include <stdlib.h>
 
 #define START_CAPACITY 16
-#define SCALE_X 3
-#define SCALE_Y 10
 
 //возвращаемые значения: -1 - ошибка, 0 - успех, 1 - коллизия
 
@@ -164,8 +162,8 @@ int attempt(int abonent_count, int* ready_list, List* out_list) {
 
 int process_data(Statistics_data *stat_data) {
     int debug_total = 0;
-    stat_data->data[0].x = 40;
-    stat_data->data[0].y = PLOT_SCREEN_HEIGHT - 40;
+    stat_data->data[0].x = 80;
+    stat_data->data[0].y = PLOT_SCREEN_HEIGHT - 80;
     for (int abonent_count = 1; abonent_count <= MAX_ABONENTS_STATISTICS; ++abonent_count) {
         long double attempts_sum = 0;
         long long total_attempts = 0;
@@ -197,10 +195,10 @@ int process_data(Statistics_data *stat_data) {
             list_free(&l);
             free(ready_list);
         }
-        stat_data->data[abonent_count].x = abonent_count * SCALE_X + 40;
-        long double y = PLOT_SCREEN_HEIGHT - 40 - attempts_sum * SCALE_Y / total_attempts; // Возможно деление на 0?
+        stat_data->data[abonent_count].x = abonent_count * SCALE_X + 80;
+        long double y = PLOT_SCREEN_HEIGHT - 80 - attempts_sum * SCALE_Y / total_attempts; // Возможно деление на 0?
         stat_data->data[abonent_count].y = y;
-        printf("%d %Lf\n", abonent_count, (attempts_sum / total_attempts) + 40);
+        printf("%d %Lf\n", abonent_count, (attempts_sum / total_attempts));
         printf("%Lf %d\n\n", attempts_sum, total_attempts);
     }
     stat_data->is_processed = true;

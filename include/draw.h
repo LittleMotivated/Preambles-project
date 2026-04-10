@@ -27,8 +27,11 @@ typedef struct {
 #define GREEN 13, 151, 44, 255
 #define BLUE 0, 0, 255, 255
 
-void DrawText(SDL_Renderer *renderer, TTF_Font *font, char *text, int x, int y, bool left_align);
-void DrawTextCentered(SDL_Renderer *renderer, TTF_Font *font, char *text, int x, int y, int center_by);
+void DrawText(SDL_Renderer *renderer, TTF_Font *font, char *text,
+              int x, int y, int font_size, bool left_align);
+
+void DrawTextCentered(SDL_Renderer *renderer, TTF_Font *font,
+                      char *text, int x, int y, int font_size, int center_by);
 
 // Рисует основу (номера абонентов, станцию...)
 int DrawBase(SDL_Renderer *renderer, TTF_Font *font,

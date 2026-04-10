@@ -10,8 +10,11 @@
 
 #define MAX_PREAMBLES 64
 #define MAX_ATTEMPTS 500
-#define MAX_ABONENTS_STATISTICS 300 // 300
-#define STAT_ATTEMPTS_NUMBER 50 // 200
+#define MAX_ABONENTS_STATISTICS 300 // 300; max = ~350
+#define STAT_ATTEMPTS_NUMBER 200 // 200
+
+#define SCALE_X 4
+#define SCALE_Y 15
 
 typedef enum States_e{
     ABONENT_SEND_PREAMBLE,
