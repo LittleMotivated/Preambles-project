@@ -208,11 +208,11 @@ int DrawPlot(SDL_Renderer *renderer, TTF_Font *font, Statistics_data *stat_data)
     }
     DrawText(renderer, font, "Количество абонентов",
              PLOT_SCREEN_WIDTH - padding + 20, PLOT_SCREEN_HEIGHT - padding + 30, 20, false);
-    DrawText(renderer, font, "Количество попыток для подключения", padding - 40, padding - 30, 20, true);
+    DrawText(renderer, font, "Среднее количество попыток для подключения", padding - 40, padding - 30, 20, true);
 
     // Заголовок
     DrawTextCentered(renderer, font,
-                     "Зависимость количества попыток, необходимых для подключения, от количества абонентов",
+                     "Зависимость оценки среднего количества попыток, необходимых для подключения, от количества абонентов",
                     PLOT_SCREEN_WIDTH / 2, 26, 25, 0);
 
     SDL_RenderPresent(renderer);
