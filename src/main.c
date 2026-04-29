@@ -62,6 +62,7 @@ int main(int argc, char* argv[]) {
     if (init_window_and_renderer(&plot_window, "Plot with statistics", &plot_renderer) != 0) {
         goto delete_plot_window_and_renderer;
     }
+    SDL_HideWindow(plot_window);
 
     if (TTF_Init() != 0) {
         printf("Error: Failed to init TTF.\n");
@@ -87,8 +88,12 @@ int main(int argc, char* argv[]) {
         printf("Error: List initialization failed.\n");
         goto delete_list;
     }
-    Statistics_data stat_data;
-    stat_data.is_processed = false;
+    Statistics_data stat_data64 = {0};
+    Statistics_data stat_data32 = {0};
+    Statistics_data stat_data16 = {0};
+    stat_data64.is_processed = false;
+    stat_data32.is_processed = false;
+    stat_data16.is_processed = false;
 
     int attemption_number = 0;
     int success = 0;
@@ -111,11 +116,13 @@ int main(int argc, char* argv[]) {
                 switch (event.key.keysym.sym)
                 {
                 case SDLK_p: // Запустить симуляции и открыть график
-                    if (stat_data.is_processed == false) {
-                        process_data(&stat_data);
+                    if (stat_data64.is_processed == false) {
+                        process_data(&stat_data64, 64);
+                        process_data(&stat_data32, 32);
+                        process_data(&stat_data16, 16);
                     }
                     SDL_ShowWindow(plot_window);
-                    DrawPlot(plot_renderer, font, &stat_data);
+                    DrawPlot(plot_renderer, font, &stat_data64, &stat_data32, &stat_data16);
                     break;
                 case SDLK_SPACE:
                     running = -running; // Пауза
@@ -157,7 +164,7 @@ int main(int argc, char* argv[]) {
             attemption_number++;
             l.size = 0;
             i = 0;
-            attempt_res = attempt(abonent_count, ready_list, &l);
+            attempt_res = attempt(abonent_count, 64, ready_list, &l);
             if (attempt_res == -1) {
                 printf("Error: Attempt failed with code -1.\n");
                 goto delete_all;

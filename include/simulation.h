@@ -10,11 +10,11 @@
 
 #define MAX_PREAMBLES 64
 #define MAX_ATTEMPTS 500
-#define MAX_ABONENTS_STATISTICS 300 // 300; max = ~350
+#define MAX_ABONENTS_STATISTICS 100 // 300; max = ~350
 #define STAT_ATTEMPTS_NUMBER 200 // 200
 
-#define SCALE_X 4
-#define SCALE_Y 15
+#define SCALE_X 12
+#define SCALE_Y 23
 
 typedef enum States_e{
     ABONENT_SEND_PREAMBLE,
@@ -40,13 +40,14 @@ typedef struct Call_list_s {
 int list_init(List* l);
 int list_add(List* l, Call_type type, int abonent_id, int preamble_number);
 void list_free(List* l);
-int attempt(int abonent_count, int* ready_list, List* out_list);
+int attempt(int abonent_count, int preamble_count, int* ready_list, List* out_list);
 
 typedef struct {
     SDL_FPoint data[MAX_ABONENTS_STATISTICS + 1];
     char is_processed;
+    int preamble_count;
 } Statistics_data;
 
-int process_data(Statistics_data *stat_data);
+int process_data(Statistics_data *stat_data, int preamble_count);
 
 #endif // SIMULATION_H_
