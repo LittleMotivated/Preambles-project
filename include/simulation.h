@@ -8,7 +8,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
-#define MAX_PREAMBLES 64
+#define MAX_PREAMBLES 5
 #define MAX_ATTEMPTS 500
 #define MAX_ABONENTS_STATISTICS 100 // 300; max = ~350
 #define STAT_ATTEMPTS_NUMBER 200 // 200

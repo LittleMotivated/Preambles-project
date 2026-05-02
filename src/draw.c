@@ -111,7 +111,7 @@ int DrawBase(SDL_Renderer *renderer, TTF_Font *font,
 
     // Рисуем преамбулы
     SDL_SetRenderDrawColor(renderer, RED);
-    SDL_Rect rect = {MARGIN + (WORK_WIDTH) / (MAX_PREAMBLES - 1), SCREEN_HEIGHT - MARGIN - 30, 10, 30};
+    SDL_Rect rect = {MARGIN, SCREEN_HEIGHT - MARGIN - 30, 10, 30};
     for (int i = 0; i < MAX_PREAMBLES; ++i) {
         if (count_usage != NULL) {
             if (count_usage[i] == 0) {
@@ -140,9 +140,11 @@ int UpdateScreen(SDL_Renderer *renderer, TTF_Font *font,
     SDL_Delay(70);
 
     int i = 0;
-    int count_usage[64] = {0};
+    int count_usage[MAX_PREAMBLES] = {0};
     while (list->calls[i].type == ABONENT_SEND_PREAMBLE) {
-        count_usage[list->calls[i].preamble_number]++;
+        if (list->calls[i].preamble_number >= 0 && list->calls[i].preamble_number < MAX_PREAMBLES) {
+            count_usage[list->calls[i].preamble_number]++;
+        }
         i++;
     }
 
@@ -177,7 +179,7 @@ int UpdateScreen(SDL_Renderer *renderer, TTF_Font *font,
         }*/
         if (count_usage[call.preamble_number] > 0) {
             SDL_RenderDrawLine(renderer, MARGIN + padding * call.abonent_id, MARGIN + 50,
-                               MARGIN + (WORK_WIDTH) / (MAX_PREAMBLES - 1) + PREAMBLE_PADD * call.preamble_number + 5,
+                               MARGIN + PREAMBLE_PADD * call.preamble_number + 5,
                                SCREEN_HEIGHT - MARGIN - 30);
         }
         i++;

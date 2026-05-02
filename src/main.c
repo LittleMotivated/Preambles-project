@@ -164,7 +164,7 @@ int main(int argc, char* argv[]) {
             attemption_number++;
             l.size = 0;
             i = 0;
-            attempt_res = attempt(abonent_count, 64, ready_list, &l);
+            attempt_res = attempt(abonent_count, MAX_PREAMBLES, ready_list, &l);
             if (attempt_res == -1) {
                 printf("Error: Attempt failed with code -1.\n");
                 goto delete_all;
