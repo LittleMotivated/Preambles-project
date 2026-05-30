@@ -95,6 +95,13 @@ int main(int argc, char* argv[]) {
     stat_data32.is_processed = false;
     stat_data16.is_processed = false;
 
+    Statistics_data stat_data_opt64 = {0};
+    Statistics_data stat_data_opt32 = {0};
+    Statistics_data stat_data_opt16 = {0};
+    stat_data_opt64.is_processed = false;
+    stat_data_opt32.is_processed = false;
+    stat_data_opt16.is_processed = false;
+
     int attemption_number = 0;
     int success = 0;
     int attempt_res = 0;
@@ -117,12 +124,16 @@ int main(int argc, char* argv[]) {
                 {
                 case SDLK_p: // Запустить симуляции и открыть график
                     if (stat_data64.is_processed == false) {
-                        process_data(&stat_data64, 64);
-                        process_data(&stat_data32, 32);
-                        process_data(&stat_data16, 16);
+                        process_data(&stat_data64, 64, false);
+                        process_data(&stat_data32, 32, false);
+                        process_data(&stat_data16, 16, false);
+                        process_data(&stat_data_opt64, 64, true);
+                        process_data(&stat_data_opt32, 32, true);
+                        process_data(&stat_data_opt16, 16, true);
                     }
                     SDL_ShowWindow(plot_window);
-                    DrawPlot(plot_renderer, font, &stat_data64, &stat_data32, &stat_data16);
+                    DrawPlot(plot_renderer, font, &stat_data64, &stat_data32, &stat_data16,
+                             &stat_data_opt64, &stat_data_opt32, &stat_data_opt16);
                     break;
                 case SDLK_SPACE:
                     running = -running; // Пауза
@@ -164,7 +175,7 @@ int main(int argc, char* argv[]) {
             attemption_number++;
             l.size = 0;
             i = 0;
-            attempt_res = attempt(abonent_count, MAX_PREAMBLES, ready_list, &l);
+            attempt_res = attempt(abonent_count, MAX_PREAMBLES, ready_list, &l, false);
             if (attempt_res == -1) {
                 printf("Error: Attempt failed with code -1.\n");
                 goto delete_all;

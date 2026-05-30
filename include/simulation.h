@@ -40,7 +40,7 @@ typedef struct Call_list_s {
 int list_init(List* l);
 int list_add(List* l, Call_type type, int abonent_id, int preamble_number);
 void list_free(List* l);
-int attempt(int abonent_count, int preamble_count, int* ready_list, List* out_list);
+int attempt(int abonent_count, int preamble_count, int* ready_list, List* out_list, bool optimized);
 
 typedef struct {
     SDL_FPoint data[MAX_ABONENTS_STATISTICS + 1];
@@ -48,6 +48,6 @@ typedef struct {
     int preamble_count;
 } Statistics_data;
 
-int process_data(Statistics_data *stat_data, int preamble_count);
+int process_data(Statistics_data* stat_data, int preamble_count, bool optimized);
 
 #endif // SIMULATION_H_

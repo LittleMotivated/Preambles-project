@@ -13,6 +13,7 @@ static void draw_one(Statistics_data* data, SDL_Renderer *renderer, Uint8 r, Uin
         return;
     }
     SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+    //SDL_RenderDrawLinesF(renderer, data->data, MAX_ABONENTS_STATISTICS);
     int prev_x = -1;
     int prev_y = -1;
     for (int i = 1; i <= MAX_ABONENTS_STATISTICS; i++) {
@@ -22,7 +23,7 @@ static void draw_one(Statistics_data* data, SDL_Renderer *renderer, Uint8 r, Uin
         int x = (int)data->data[i].x;
         int y = (int)data->data[i].y;
         if (prev_x >= 0) {
-            SDL_RenderDrawLine(renderer, prev_x, prev_y, x, y);
+            thickLineRGBA(renderer, prev_x, prev_y, x, y, 3, r, g, b, 255);
         }
         prev_x = x;
         prev_y = y;
@@ -187,7 +188,8 @@ int UpdateScreen(SDL_Renderer *renderer, TTF_Font *font,
     SDL_RenderPresent(renderer);
 }
 
-int DrawPlot(SDL_Renderer *renderer, TTF_Font *font, Statistics_data *stat_data1, Statistics_data *stat_data2, Statistics_data *stat_data3) {
+int DrawPlot(SDL_Renderer *renderer, TTF_Font *font, Statistics_data *stat_data1, Statistics_data *stat_data2, Statistics_data *stat_data3,
+             Statistics_data *stat_data4, Statistics_data *stat_data5, Statistics_data *stat_data6) {
     SDL_SetRenderDrawColor(renderer, WHITE);
     SDL_RenderClear(renderer);
 
@@ -238,14 +240,18 @@ int DrawPlot(SDL_Renderer *renderer, TTF_Font *font, Statistics_data *stat_data1
                      "Зависимость оценки среднего количества попыток, необходимых для подключения, от количества абонентов",
                     PLOT_SCREEN_WIDTH / 2, 26, 25, 0);
 
-    draw_one(stat_data1, renderer, 0, 0, 255);
-    draw_one(stat_data2, renderer, 255, 0, 0);
-    draw_one(stat_data3, renderer, 0, 255, 0);
+    //draw_one(stat_data1, renderer, 0, 0, 255);
+    draw_one(stat_data2, renderer, 255, 0, 0); // 32
+    draw_one(stat_data3, renderer, 0, 0, 255); // 16
+
+    //draw_one(stat_data4, renderer, 86, 194, 185);
+    draw_one(stat_data5, renderer, 255, 127, 0); // 32 + opt
+    draw_one(stat_data6, renderer, 0, 255, 0); // 16 + opt
 
     // Легенда
-    int leg_x = PLOT_SCREEN_WIDTH - 180;
+    int leg_x = PLOT_SCREEN_WIDTH - 240;
     int leg_y = 75;
-    int leg_w = 170;
+    int leg_w = 200;
     int leg_h = 110;
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 220);
@@ -254,18 +260,26 @@ int DrawPlot(SDL_Renderer *renderer, TTF_Font *font, Statistics_data *stat_data1
     SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
     SDL_RenderDrawRect(renderer, &bg_rect);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
     SDL_Rect box = {leg_x, leg_y, 20, 20};
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-    SDL_RenderFillRect(renderer, &box);
-    DrawText(renderer, font, "64 преамбулы", leg_x + 25, leg_y, 18, true);
-    box.y += 30;
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, &box);
-    DrawText(renderer, font, "32 преамбулы", leg_x + 25, leg_y + 30, 18, true);
+    DrawText(renderer, font, "32 преамбулы", leg_x + 25, leg_y, 18, true);
+
+    box.y += 30;
+    SDL_SetRenderDrawColor(renderer, 255, 127, 0, 255);
+    SDL_RenderFillRect(renderer, &box);
+    DrawText(renderer, font, "32 преамбулы + опт.", leg_x + 25, leg_y + 30, 18, true);
+
+    box.y += 30;
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    SDL_RenderFillRect(renderer, &box);
+    DrawText(renderer, font, "16 преамбул", leg_x + 25, leg_y + 60, 18, true);
+
     box.y += 30;
     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     SDL_RenderFillRect(renderer, &box);
-    DrawText(renderer, font, "16 преамбул", leg_x + 25, leg_y + 60, 18, true);
+    DrawText(renderer, font, "16 преамбул + опт.", leg_x + 25, leg_y + 90, 18, true);
 
     SDL_RenderPresent(renderer);
     return 0;

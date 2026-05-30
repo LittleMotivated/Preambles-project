@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Iinclude -g
-LDFLAGS = `sdl2-config --libs` -lSDL2_image -lSDL2_ttf -lm
+LDFLAGS = `sdl2-config --libs` -lSDL2_image -lSDL2_ttf -lSDL2_gfx -lm
 
 TARGET = sdl_program
 SRCDIR = src

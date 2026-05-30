@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL2_gfxPrimitives.h>
 
 typedef struct {
     int x1, y1, x2, y2;
@@ -42,6 +43,7 @@ int UpdateScreen(SDL_Renderer *renderer, TTF_Font *font,
                  int abonent_count, int padding, List *list,
                  int attemption_number, int *ready_list);
 
-int DrawPlot(SDL_Renderer *renderer, TTF_Font *font, Statistics_data *stat_data1, Statistics_data *stat_data2, Statistics_data *stat_data3);
+int DrawPlot(SDL_Renderer *renderer, TTF_Font *font, Statistics_data *stat_data1, Statistics_data *stat_data2, Statistics_data *stat_data3,
+             Statistics_data *stat_data4, Statistics_data *stat_data5, Statistics_data *stat_data6);
 
 #endif // DRAW_H_

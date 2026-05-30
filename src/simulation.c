@@ -45,7 +45,7 @@ void list_free(List* l) {
     l->size = l->capacity = 0;
 }
 
-int attempt(int abonent_count, int preamble_count, int* ready_list, List* out_list) {
+int attempt(int abonent_count, int preamble_count, int* ready_list, List* out_list, bool optimized) {
     if (out_list == NULL || ready_list == NULL) {
         printf("Error: out_list or ready_list is NULL.\n");
         return -1;
@@ -73,10 +73,20 @@ int attempt(int abonent_count, int preamble_count, int* ready_list, List* out_li
         free(count_usage);
         return -1;
     }
-    
+
+    int not_connected_abonents = 0;
+    for (int i = 0; i < abonent_count; i++) {
+        if (ready_list[i] == 0) {
+            not_connected_abonents++;
+        }
+    }
 
     for (int i = 0; i < abonent_count; i++) {
         if (ready_list[i] != 0) {
+            continue;
+        }
+        int chance = rand() % not_connected_abonents;
+        if (optimized && chance < not_connected_abonents - preamble_count) {
             continue;
         }
         int preamble = rand() % preamble_count;
@@ -176,7 +186,7 @@ int attempt(int abonent_count, int preamble_count, int* ready_list, List* out_li
     }
 }
 
-int process_data(Statistics_data *stat_data, int p_count) {
+int process_data(Statistics_data *stat_data, int p_count, bool optimized) {
     stat_data->preamble_count = p_count;
     int debug_total = 0;
     stat_data->data[0].x = 80;
@@ -205,7 +215,7 @@ int process_data(Statistics_data *stat_data, int p_count) {
             }
             while (success < abonent_count && attempts < max_attempts) {
                 attempts++;
-                int res = attempt(abonent_count, p_count, ready_list, &l);
+                int res = attempt(abonent_count, p_count, ready_list, &l, optimized);
                 success += res;
                 attemption_number++;
                 if (res == 0 || res == -1) { // Нет обработки ошибки res == -1
