@@ -1,5 +1,6 @@
 #include "draw.h"
 #include "simulation.h"
+#include "util.h"
 
 const SDL_Color COLOR_CLEAR = {0, 0, 0, 255};
 const SDL_Color COLOR_WHITE = {255, 255, 255, 255};
@@ -8,12 +9,15 @@ const SDL_Color COLOR_RED = {255, 0, 0, 255};
 const SDL_Color COLOR_GREEN = {0, 255, 0, 255};
 const SDL_Color COLOR_GRAY = {100, 100, 100, 255};
 
-static void draw_one(Statistics_data* data, SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b) {
+#define COLOR_64 255, 0, 0
+#define COLOR_32 0, 255, 0
+#define COLOR_16 0, 0, 255
+
+static void draw_one(Statistics_data* data, SDL_Renderer *renderer, Uint8 r, Uint8 g, Uint8 b, bool is_dotted) {
     if (!data->is_processed) {
         return;
     }
     SDL_SetRenderDrawColor(renderer, r, g, b, 255);
-    //SDL_RenderDrawLinesF(renderer, data->data, MAX_ABONENTS_STATISTICS);
     int prev_x = -1;
     int prev_y = -1;
     for (int i = 1; i <= MAX_ABONENTS_STATISTICS; i++) {
@@ -23,7 +27,12 @@ static void draw_one(Statistics_data* data, SDL_Renderer *renderer, Uint8 r, Uin
         int x = (int)data->data[i].x;
         int y = (int)data->data[i].y;
         if (prev_x >= 0) {
-            thickLineRGBA(renderer, prev_x, prev_y, x, y, 3, r, g, b, 255);
+            if (is_dotted) {
+                thickLineRGBA(renderer, prev_x, prev_y, x, y, 1, r, g, b, 255);
+                filledCircleRGBA(renderer, prev_x, prev_y, 3, r, g, b, 255);
+            } else {
+                thickLineRGBA(renderer, prev_x, prev_y, x, y, 3, r, g, b, 255);
+            }
         }
         prev_x = x;
         prev_y = y;
@@ -179,9 +188,12 @@ int UpdateScreen(SDL_Renderer *renderer, TTF_Font *font,
             SDL_SetRenderDrawColor(renderer, RED);
         }*/
         if (count_usage[call.preamble_number] > 0) {
-            SDL_RenderDrawLine(renderer, MARGIN + padding * call.abonent_id, MARGIN + 50,
+            /*SDL_RenderDrawLine(renderer, MARGIN + padding * call.abonent_id, MARGIN + 50,
                                MARGIN + PREAMBLE_PADD * call.preamble_number + 5,
-                               SCREEN_HEIGHT - MARGIN - 30);
+                               SCREEN_HEIGHT - MARGIN - 30);*/
+            thickLineRGBA(renderer, MARGIN + padding * call.abonent_id, MARGIN + 50,
+                               MARGIN + PREAMBLE_PADD * call.preamble_number + 5,
+                               SCREEN_HEIGHT - MARGIN - 30, 2, GRAY);
         }
         i++;
     }
@@ -231,28 +243,28 @@ int DrawPlot(SDL_Renderer *renderer, TTF_Font *font, Statistics_data *stat_data1
         //printf("\n\n\n%d %d\n\n\n", 10, PLOT_SCREEN_HEIGHT - 40 - i * 10);
         //printf(buf);
     }
-    DrawText(renderer, font, "Количество абонентов",
+    DrawText(renderer, font, "Число абонентов",
              PLOT_SCREEN_WIDTH - padding + 20, PLOT_SCREEN_HEIGHT - padding + 30, 20, false);
-    DrawText(renderer, font, "Среднее количество попыток для подключения", padding - 40, padding - 30, 20, true);
+    DrawText(renderer, font, "Среднее число попыток для подключения", padding - 40, padding - 30, 20, true);
 
     // Заголовок
     DrawTextCentered(renderer, font,
-                     "Зависимость оценки среднего количества попыток, необходимых для подключения, от количества абонентов",
+                     "Зависимость оценки среднего числа попыток, необходимых для подключения, от числа абонентов",
                     PLOT_SCREEN_WIDTH / 2, 26, 25, 0);
 
-    //draw_one(stat_data1, renderer, 0, 0, 255);
-    draw_one(stat_data2, renderer, 255, 0, 0); // 32
-    draw_one(stat_data3, renderer, 0, 0, 255); // 16
+    draw_one(stat_data1, renderer, COLOR_64, false); // 64
+    draw_one(stat_data2, renderer, COLOR_32, false); // 32
+    draw_one(stat_data3, renderer, COLOR_16, false); // 16
 
-    //draw_one(stat_data4, renderer, 86, 194, 185);
-    draw_one(stat_data5, renderer, 255, 127, 0); // 32 + opt
-    draw_one(stat_data6, renderer, 0, 255, 0); // 16 + opt
+    draw_one(stat_data4, renderer, COLOR_64, true); // 64 + opt
+    draw_one(stat_data5, renderer, COLOR_32, true); // 32 + opt
+    draw_one(stat_data6, renderer, COLOR_16, true); // 16 + opt
 
     // Легенда
     int leg_x = PLOT_SCREEN_WIDTH - 240;
     int leg_y = 75;
     int leg_w = 200;
-    int leg_h = 110;
+    int leg_h = 170;
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 220);
     SDL_Rect bg_rect = {leg_x - 10, leg_y - 10, leg_w + 20, leg_h + 20};
@@ -262,24 +274,37 @@ int DrawPlot(SDL_Renderer *renderer, TTF_Font *font, Statistics_data *stat_data1
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
     SDL_Rect box = {leg_x, leg_y, 20, 20};
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, COLOR_64, 255);
     SDL_RenderFillRect(renderer, &box);
-    DrawText(renderer, font, "32 преамбулы", leg_x + 25, leg_y, 18, true);
+    DrawText(renderer, font, "64 преамбулы", leg_x + 25, leg_y, 18, true);
 
     box.y += 30;
-    SDL_SetRenderDrawColor(renderer, 255, 127, 0, 255);
-    SDL_RenderFillRect(renderer, &box);
-    DrawText(renderer, font, "32 преамбулы + опт.", leg_x + 25, leg_y + 30, 18, true);
+    SDL_SetRenderDrawColor(renderer, COLOR_64, 255);
+    //SDL_RenderFillRect(renderer, &box);
+    filledCircleRGBA(renderer, box.x + 10, box.y + 10, 8, COLOR_64, 255);
+    DrawText(renderer, font, "64 преамбулы + опт.", leg_x + 25, leg_y + 30, 18, true);
 
     box.y += 30;
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    SDL_SetRenderDrawColor(renderer, COLOR_32, 255);
     SDL_RenderFillRect(renderer, &box);
-    DrawText(renderer, font, "16 преамбул", leg_x + 25, leg_y + 60, 18, true);
+    DrawText(renderer, font, "32 преамбулы", leg_x + 25, leg_y + 60, 18, true);
 
     box.y += 30;
-    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    SDL_SetRenderDrawColor(renderer, COLOR_32, 255);
+    //SDL_RenderFillRect(renderer, &box);
+    filledCircleRGBA(renderer, box.x + 10, box.y + 10, 8, COLOR_32, 255);
+    DrawText(renderer, font, "32 преамбулы + опт.", leg_x + 25, leg_y + 90, 18, true);
+
+    box.y += 30;
+    SDL_SetRenderDrawColor(renderer, COLOR_16, 255);
     SDL_RenderFillRect(renderer, &box);
-    DrawText(renderer, font, "16 преамбул + опт.", leg_x + 25, leg_y + 90, 18, true);
+    DrawText(renderer, font, "16 преамбул", leg_x + 25, leg_y + 120, 18, true);
+
+    box.y += 30;
+    SDL_SetRenderDrawColor(renderer, COLOR_16, 255);
+    //SDL_RenderFillRect(renderer, &box);
+    filledCircleRGBA(renderer, box.x + 10, box.y + 10, 8, COLOR_16, 255);
+    DrawText(renderer, font, "16 преамбул + опт.", leg_x + 25, leg_y + 150, 18, true);
 
     SDL_RenderPresent(renderer);
     return 0;
