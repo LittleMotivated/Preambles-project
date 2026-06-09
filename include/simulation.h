@@ -10,11 +10,11 @@
 
 #define MAX_PREAMBLES 5
 #define MAX_ATTEMPTS 500
-#define MAX_ABONENTS_STATISTICS 100 // 300; max = ~350
+#define MAX_ABONENTS_STATISTICS 400 // 300; max = ~350
 #define STAT_ATTEMPTS_NUMBER 200 // 200
 
-#define SCALE_X 12
-#define SCALE_Y 23
+#define SCALE_X 2
+#define SCALE_Y 8
 
 typedef enum States_e{
     ABONENT_SEND_PREAMBLE,
@@ -48,6 +48,15 @@ typedef struct {
     int preamble_count;
 } Statistics_data;
 
-int process_data(Statistics_data* stat_data, int preamble_count, bool optimized);
+typedef struct {
+    Statistics_data *stat_data;
+    int p_count;
+    bool optimized;
+    int start;
+    int end;
+} ThreadData;
+
+int process_data_parallel(Statistics_data *stat_data1, Statistics_data *stat_data2, int p_count);
+//int process_data(void *data);
 
 #endif // SIMULATION_H_

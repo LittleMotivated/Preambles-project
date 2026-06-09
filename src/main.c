@@ -124,16 +124,16 @@ int main(int argc, char* argv[]) {
                 {
                 case SDLK_p: // Запустить симуляции и открыть график
                     if (stat_data64.is_processed == false) {
-                        process_data(&stat_data64, 64, false);
-                        process_data(&stat_data32, 32, false);
-                        process_data(&stat_data16, 16, false);
-                        process_data(&stat_data_opt64, 64, true);
-                        process_data(&stat_data_opt32, 32, true);
-                        process_data(&stat_data_opt16, 16, true);
+                        //process_data(&stat_data64, 64, false);
+                        //process_data(&stat_data32, 32, false);
+                        //process_data(&stat_data16, 16, false);
+                        //process_data(&stat_data_opt64, 64, true);
+                        //process_data(&stat_data_opt32, 32, true);
+                        //process_data(&stat_data_opt16, 16, true);
+                        process_data_parallel(&stat_data64, &stat_data_opt64, 64);
                     }
                     SDL_ShowWindow(plot_window);
-                    DrawPlot(plot_renderer, font, &stat_data64, &stat_data32, &stat_data16,
-                             &stat_data_opt64, &stat_data_opt32, &stat_data_opt16);
+                    DrawPlot(plot_renderer, font, &stat_data64, &stat_data_opt64);
                     break;
                 case SDLK_SPACE:
                     running = -running; // Пауза
